@@ -18,4 +18,8 @@ App 的功能变化按版本记录;文档、仓库维护类改动归入「未发
 ### 兼容性
 
 - 短信发送按订阅 ID 获取 SmsManager,兼容 Android 8~11(部分新机型专用的 API 会导致旧系统闪退,已修复);全面屏 / 挖孔屏状态栏与底部导航栏同步适配
-- 已真机验证:小米 15 Ultra(HyperOS 4)、荣耀 PCT-AL10(HarmonyOS 4,Android 10 底座)
+- 已真机验证:小米 15 Ultra(HyperOS 4)、Redmi K70(HyperOS 3,Android 16)、荣耀 V20(PCT-AL10,HarmonyOS 4,Android 10 底座)、Redmi 9(MIUI 13,Android 12)
+
+### 文档
+
+- README 重写为说明书结构,截图更新为小米 15 Ultra 实拍;新增本更新日志
