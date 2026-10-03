@@ -54,7 +54,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="4dp"
-                android:text="本应用不会联网,短信内容仅在本机处理。"
+                android:text="平时不联网,仅「检查更新」时访问 GitHub;短信内容仅在本机处理。"
                 android:textSize="16sp"
                 android:textColor="@color/text_gray" />
 
