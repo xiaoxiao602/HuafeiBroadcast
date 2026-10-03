@@ -32,7 +32,7 @@ App 平时零联网，没有服务器、统计和广告，短信内容只在本�
 
 ## 下载与安装
 
-1. 从 [Releases](../../releases) 的 Assets 里下载 `HuafeiBroadcast-v1.0.0-release.apk` 传到手机安装（`-debug` 结尾的调试版日志更全，日常使用装 release 版）。
+1. 从 [Releases](../../releases) 的 Assets 里下载 `HuafeiBroadcast-v1.0.0-release.apk` 传到手机安装（调试版 `HuafeiBroadcast-v1.0.0-debug.apk` 日志更全，日常使用装 release 版）。
 2. 打开 App，按「首次使用」引导操作：点「一键授权」，把系统弹出的短信、电话权限全部允许，页面会逐项显示授权状态。
 3. 选择运营商后点「完成，开始使用」；双卡手机在引导页选卡，单卡自动完成。
 
