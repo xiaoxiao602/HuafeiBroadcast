@@ -24,6 +24,11 @@ class Prefs(context: Context) {
         get() = sp.getBoolean(KEY_SETUP_DONE, false)
         set(value) = sp.edit().putBoolean(KEY_SETUP_DONE, value).apply()
 
+    /** 是否至少点过一次「一键授权」:用于识别「拒绝且不再询问」的静默失败 */
+    var permAsked: Boolean
+        get() = sp.getBoolean(KEY_PERM_ASKED, false)
+        set(value) = sp.edit().putBoolean(KEY_PERM_ASKED, value).apply()
+
     var queryNumber: String
         get() = sp.getString(KEY_QUERY_NUMBER, "") ?: ""
         set(value) = sp.edit().putString(KEY_QUERY_NUMBER, value).apply()
@@ -94,6 +99,7 @@ class Prefs(context: Context) {
         const val KEY_SUB_ICCID = "subIccid"
         const val KEY_CARRIER_ID = "carrierId"
         const val KEY_SETUP_DONE = "setupDone"
+        const val KEY_PERM_ASKED = "permAsked"
         const val KEY_QUERY_NUMBER = "queryNumber"
         const val KEY_QUERY_COMMAND = "queryCommand"
         const val KEY_AUTO_QUERY = "autoQuery"

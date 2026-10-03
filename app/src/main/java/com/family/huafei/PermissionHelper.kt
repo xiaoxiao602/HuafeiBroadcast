@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.util.Log
 
@@ -22,6 +23,21 @@ object PermissionHelper {
     fun isXiaomi(): Boolean {
         val maker = Build.MANUFACTURER ?: return false
         return maker.contains("Xiaomi", true) || maker.contains("Redmi", true)
+    }
+
+    /**
+     * 打开系统「应用详情」页(权限被永久拒绝、requestPermissions 静默失败时的兜底入口)。
+     * @return 是否成功拉起
+     */
+    fun openAppDetails(activity: Activity): Boolean = try {
+        activity.startActivity(
+            Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                .setData(Uri.fromParts("package", activity.packageName, null))
+        )
+        true
+    } catch (e: Exception) {
+        Log.w(TAG, "open app details failed: ${e.message}")
+        false
     }
 
     /**

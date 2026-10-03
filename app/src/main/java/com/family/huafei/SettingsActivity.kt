@@ -208,7 +208,7 @@ class SettingsActivity : Activity() {
         if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
             Toast.makeText(
                 this,
-                "权限已授予。小米手机请再点「小米权限设置」,放行短信、通知类短信和电话(无需自启动)",
+                "权限已授予。小米手机请再点「小米权限设置」→「其他权限」→「通知类短信」→ 始终允许",
                 Toast.LENGTH_LONG
             ).show()
         } else {
@@ -244,6 +244,12 @@ class SettingsActivity : Activity() {
                 setPadding(0, 8, 0, 8)
             })
             return
+        }
+        // 只有一张卡时自动认作查询卡并保存,与主界面查询单卡兜底一致,
+        // 避免"正在用这张卡查询,设置页却显示未选"
+        if (prefs.subId == -1 && subs.size == 1) {
+            prefs.subId = subs[0].subscriptionId
+            prefs.subIccid = subs[0].iccId ?: ""
         }
         subs.forEach { sub ->
             simContainer.addView(makeSimRow(sub))
@@ -342,7 +348,7 @@ class SettingsActivity : Activity() {
         if (!PermissionHelper.openMiuiPermissionEditor(this)) {
             Toast.makeText(
                 this,
-                "请手动打开:安全中心 → 应用管理 → 权限 → 话费播报,允许短信、通知类短信和电话",
+                "请手动打开:安全中心 → 应用管理 → 权限 → 话费播报 →「设置相关」→「通知类短信」→ 始终允许",
                 Toast.LENGTH_LONG
             ).show()
         }
