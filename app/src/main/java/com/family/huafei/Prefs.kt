@@ -29,6 +29,11 @@ class Prefs(context: Context) {
         get() = sp.getBoolean(KEY_PERM_ASKED, false)
         set(value) = sp.edit().putBoolean(KEY_PERM_ASKED, value).apply()
 
+    /** 语音播报总开关:关闭后查询结果/错误只显示不朗读(设置页的试听按钮不受影响) */
+    var announceEnabled: Boolean
+        get() = sp.getBoolean(KEY_ANNOUNCE, true)
+        set(value) = sp.edit().putBoolean(KEY_ANNOUNCE, value).apply()
+
     var queryNumber: String
         get() = sp.getString(KEY_QUERY_NUMBER, "") ?: ""
         set(value) = sp.edit().putString(KEY_QUERY_NUMBER, value).apply()
@@ -100,6 +105,7 @@ class Prefs(context: Context) {
         const val KEY_CARRIER_ID = "carrierId"
         const val KEY_SETUP_DONE = "setupDone"
         const val KEY_PERM_ASKED = "permAsked"
+        const val KEY_ANNOUNCE = "announceEnabled"
         const val KEY_QUERY_NUMBER = "queryNumber"
         const val KEY_QUERY_COMMAND = "queryCommand"
         const val KEY_AUTO_QUERY = "autoQuery"

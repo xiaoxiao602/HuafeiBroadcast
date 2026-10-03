@@ -156,7 +156,7 @@ class MainActivity : Activity() {
             } else {
                 statusHint.setTextColor(getColor(R.color.error_red))
                 statusHint.text = "查询功能需要短信权限,请让家人设置"
-                tts.speak("查询功能需要短信权限,请让家人设置")
+                announce("查询功能需要短信权限,请让家人设置")
                 requestPermissions(missing.toTypedArray(), REQ_PERMS)
             }
         }
@@ -193,7 +193,7 @@ class MainActivity : Activity() {
         if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
             render()
         } else {
-            tts.speak("查询功能需要短信权限,请让家人设置")
+            announce("查询功能需要短信权限,请让家人设置")
             try {
                 startActivity(
                     Intent(
@@ -223,7 +223,7 @@ class MainActivity : Activity() {
         if (missing.isNotEmpty()) {
             statusHint.setTextColor(getColor(R.color.error_red))
             statusHint.text = "查询功能需要短信权限,请让家人设置"
-            tts.speak("查询功能需要短信权限,请让家人设置")
+            announce("查询功能需要短信权限,请让家人设置")
             requestPermissions(missing.toTypedArray(), REQ_PERMS)
             return
         }
@@ -272,6 +272,12 @@ class MainActivity : Activity() {
         }
     }
 
+    /** 所有自动播报的唯一闸口:用户在设置里关闭「语音播报」后,查询结果与错误只显示不朗读 */
+    private fun announce(text: String) {
+        if (!prefs.announceEnabled) return
+        tts.speak(text)
+    }
+
     private fun fail(message: String) {
         handler.removeCallbacks(timeoutRunnable)
         handler.removeCallbacks(ackHintRunnable)
@@ -280,7 +286,7 @@ class MainActivity : Activity() {
         prefs.lastError = message
         prefs.lastErrorAt = System.currentTimeMillis()
         render()
-        tts.speak(message)
+        announce(message)
         handler.postDelayed({
             if (prefs.state == QueryState.FAILED) {
                 prefs.state = QueryState.IDLE
@@ -405,7 +411,7 @@ class MainActivity : Activity() {
     private fun maybeSpeakResult() {
         val now = System.currentTimeMillis()
         if (prefs.lastError.isNotEmpty() && now - prefs.lastErrorAt < 3_000) {
-            tts.speak(prefs.lastError)
+            announce(prefs.lastError)
         } else if (prefs.lastBalance.isNotEmpty() && now - prefs.lastQueryTime < 3_000) {
             speakBalance()
         }
@@ -415,7 +421,7 @@ class MainActivity : Activity() {
     private fun speakBalance() {
         if (prefs.lastBalance.isEmpty()) return
         val reading = MoneyFormatter.toChineseReading(BigDecimal(prefs.lastBalance))
-        tts.speak("您当前的话费余额是$reading")
+        announce("您当前的话费余额是$reading")
     }
 
     private fun formatLastQuery(ts: Long): String {

@@ -38,6 +38,8 @@ class SettingsActivity : Activity() {
     private lateinit var rbTelecom: RadioButton
     private lateinit var queryNumberEt: EditText
     private lateinit var queryCommandEt: EditText
+    private lateinit var announceSw: Switch
+    private lateinit var ttsBlock: View
     private lateinit var autoQuerySw: Switch
     private lateinit var vibrateSw: Switch
     private lateinit var debugSw: Switch
@@ -63,6 +65,8 @@ class SettingsActivity : Activity() {
         rbTelecom = findViewById(R.id.rbTelecom)
         queryNumberEt = findViewById(R.id.queryNumberEt)
         queryCommandEt = findViewById(R.id.queryCommandEt)
+        announceSw = findViewById(R.id.announceSw)
+        ttsBlock = findViewById(R.id.ttsBlock)
         autoQuerySw = findViewById(R.id.autoQuerySw)
         vibrateSw = findViewById(R.id.vibrateSw)
         debugSw = findViewById(R.id.debugSw)
@@ -135,6 +139,13 @@ class SettingsActivity : Activity() {
                 prefs.queryCommand = s?.toString()?.trim() ?: ""
             }
         })
+
+        announceSw.isChecked = prefs.announceEnabled
+        announceSw.setOnCheckedChangeListener { _, checked ->
+            prefs.announceEnabled = checked
+            ttsBlock.visibility = if (checked) View.VISIBLE else View.GONE
+        }
+        ttsBlock.visibility = if (prefs.announceEnabled) View.VISIBLE else View.GONE
 
         autoQuerySw.isChecked = prefs.autoQuery
         autoQuerySw.setOnCheckedChangeListener { _, checked -> prefs.autoQuery = checked }

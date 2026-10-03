@@ -166,6 +166,19 @@
             <LinearLayout style="@style/Card">
 
                 <Switch
+                    android:id="@+id/announceSw"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="52dp"
+                    android:thumbTint="@color/switch_thumb"
+                    android:trackTint="@color/switch_track"
+                    android:text="语音播报"
+                    android:textSize="20sp"
+                    android:textColor="@color/text_dark" />
+
+                <View style="@style/CardDivider" />
+
+                <Switch
                     android:id="@+id/autoQuerySw"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -204,41 +217,48 @@
 
                 <View style="@style/CardDivider" />
 
-                <TextView
-                    style="@style/FieldLabel"
-                    android:layout_marginTop="4dp"
-                    android:text="语音播报语速" />
-
                 <LinearLayout
+                    android:id="@+id/ttsBlock"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <SeekBar
-                        android:id="@+id/rateBar"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:progressTint="@color/huafei_green"
-                        android:thumbTint="@color/huafei_green" />
+                    android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/rateValue"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="4dp"
-                        android:text="x1.0"
-                        android:textSize="20sp"
-                        android:textColor="@color/text_dark" />
-                </LinearLayout>
+                        style="@style/FieldLabel"
+                        android:layout_marginTop="4dp"
+                        android:text="语音播报语速" />
 
-                <Button
-                    android:id="@+id/ttsTestBtn"
-                    style="@style/PrimaryButton"
-                    android:layout_marginTop="14dp"
-                    android:text="测试语音播报" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <SeekBar
+                            android:id="@+id/rateBar"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:progressTint="@color/huafei_green"
+                            android:thumbTint="@color/huafei_green" />
+
+                        <TextView
+                            android:id="@+id/rateValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="4dp"
+                            android:text="x1.0"
+                            android:textSize="20sp"
+                            android:textColor="@color/text_dark" />
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/ttsTestBtn"
+                        style="@style/PrimaryButton"
+                        android:layout_marginTop="14dp"
+                        android:text="测试语音播报" />
+                </LinearLayout>
             </LinearLayout>
 
             <TextView

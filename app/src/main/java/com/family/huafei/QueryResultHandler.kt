@@ -92,6 +92,7 @@ object QueryResultHandler {
     )
 
     private fun announce(context: Context, text: String) {
+        if (!Prefs(context).announceEnabled) return // 用户关闭了语音播报
         if (MainActivity.uiVisible) return // Activity 的 TtsManager 负责播报
         BgTts(context.applicationContext, text)
         Log.i(TAG, "background announce via BgTts")
