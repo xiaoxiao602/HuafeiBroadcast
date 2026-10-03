@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="首次使用"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_dark" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="请家属完成下面两步,完成后即可查询话费。"
+            android:textSize="17sp"
+            android:textColor="@color/text_gray" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:text="一、授权"
+            android:textSize="21sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_dark" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="需要短信(发送、接收)和电话权限,仅用于向运营商查询话费,不联网、不上传。"
+            android:textSize="16sp"
+            android:textColor="@color/text_gray" />
+
+        <Button
+            android:id="@+id/grantBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="56dp"
+            android:layout_marginTop="8dp"
+            android:text="一键授权"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/permStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:minHeight="32dp"
+            android:textSize="17sp"
+            android:textColor="@color/text_gray" />
+
+        <TextView
+            android:id="@+id/xiaomiHint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textSize="15sp"
+            android:textColor="@color/text_gray"
+            android:visibility="gone"
+            android:text="小米/红米手机:授权后会自动打开权限页,请把「短信、通知类短信、电话」都设为允许(无需自启动),否则收不到运营商回复。" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:text="二、选择运营商"
+            android:textSize="21sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_dark" />
+
+        <RadioGroup
+            android:id="@+id/setupCarrierGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="vertical">
+
+            <RadioButton
+                android:id="@+id/setupRbMobile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:text="中国移动(发 YE 到 10086)"
+                android:textSize="20sp" />
+
+            <RadioButton
+                android:id="@+id/setupRbUnicom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:text="中国联通(发 102 到 10010)"
+                android:textSize="20sp" />
+
+            <RadioButton
+                android:id="@+id/setupRbTelecom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:text="中国电信(发 102 到 10001)"
+                android:textSize="20sp" />
+        </RadioGroup>
+
+        <Button
+            android:id="@+id/doneBtn"
+            android:layout_width="match_parent"
+            android:layout_height="96dp"
+            android:layout_marginTop="32dp"
+            android:background="@drawable/btn_green"
+            android:stateListAnimator="@null"
+            android:text="完成,开始使用"
+            android:textSize="26sp"
+            android:textColor="@color/white"
+            android:enabled="false"
+            android:alpha="0.5" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:paddingBottom="24dp"
+            android:gravity="center"
+            android:text="运营商选错了也没关系,之后在「家属设置」里可以改"
+            android:textSize="14sp"
+            android:textColor="@color/text_gray" />
+    </LinearLayout>
+</ScrollView>

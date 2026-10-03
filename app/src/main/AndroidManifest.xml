@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <!-- 仅用于读取双卡列表(SIM 卡槽/ICCID/运营商名)以选择发卡,不采集任何数据 -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- 仅在家属手动点「检查更新」时访问 GitHub 查询新版本,其余场景不联网 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- targetSdk 30+ 包可见性过滤:声明后才能发现并绑定系统 TTS 引擎 -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
+
+    <application
+        android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
+        android:theme="@style/Theme.Huafei"
+        android:allowBackup="true"
+        android:supportsRtl="false">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <!-- 首次使用引导:授权 + 选运营商,未完成前主界面不可查询 -->
+        <activity
+            android:name=".SetupActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <!-- SMS_RECEIVED 是系统受保护广播,仅系统可发,exported=true 安全 -->
+        <receiver
+            android:name=".BalanceReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- 查询超时兜底:系统闹钟显式触发,进程被杀、清理后台同样生效 -->
+        <receiver
+            android:name=".TimeoutReceiver"
+            android:exported="false" />
+    </application>
+</manifest>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="white">#FFFFFFFF</color>
+    <color name="huafei_green">#FF2E7D32</color>
+    <color name="text_dark">#FF212121</color>
+    <color name="text_gray">#FF757575</color>
+    <color name="error_red">#FFC62828</color>
+    <color name="ic_launcher_bg">#FF2E7D32</color>
+
+    <!-- 设置页卡片式布局 -->
+    <color name="page_bg">#FFF2F4F5</color>
+    <color name="card_stroke">#FFEAEDEF</color>
+    <color name="divider">#FFE6E8EA</color>
+    <color name="edit_stroke">#FFCFD3D6</color>
+    <color name="green_tint_bg">#FFE8F5E9</color>
+    <color name="row_idle_bg">#FFFAFBFB</color>
+</resources>
