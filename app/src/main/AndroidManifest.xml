@@ -16,11 +16,12 @@
         </intent>
     </queries>
 
+    <!-- prefs 里有 ICCID/余额等敏感信息,不参与云备份与设备迁移(allowBackup=false) -->
     <application
         android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher"
         android:theme="@style/Theme.Huafei"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:supportsRtl="false">
 
         <activity

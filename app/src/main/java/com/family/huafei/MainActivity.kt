@@ -44,6 +44,7 @@ class MainActivity : Activity() {
     private val handler = Handler(Looper.getMainLooper())
     private var autoQueryPending = false
     private var sentAckReceived = false
+    private var dualSimTipShowing = false
 
     /** 发送后 8 秒仍无系统回执:多半是点掉了系统的「发送确认」,给出指引而非干等 60 秒 */
     private val ackHintRunnable = Runnable {
@@ -57,6 +58,7 @@ class MainActivity : Activity() {
         override fun onReceive(context: Context?, intent: Intent?) {
             render()
             maybeSpeakResult()
+            maybeShowDualSimTip()
         }
     }
 
@@ -73,7 +75,7 @@ class MainActivity : Activity() {
     }
 
     private val timeoutRunnable = Runnable {
-        if (prefs.state == QueryState.WAITING) fail("暂时没有收到运营商回复,请稍后再试")
+        if (prefs.state == QueryState.WAITING) fail(QueryResultHandler.NO_REPLY_ERROR)
     }
 
     private val openSettingsRunnable = Runnable {
@@ -145,6 +147,8 @@ class MainActivity : Activity() {
             startActivity(Intent(this, SetupActivity::class.java))
         }
         healWaitingState()
+        // 后台闹钟超时后回到界面:状态已是 FAILED 且错误是「无回复」,补弹双卡提示
+        maybeShowDualSimTip()
         render()
         if (autoQueryPending) {
             autoQueryPending = false
@@ -169,7 +173,7 @@ class MainActivity : Activity() {
         if (elapsed >= BalanceReceiver.TIMEOUT_MS) {
             cancelTimeoutAlarm()
             prefs.state = QueryState.FAILED
-            prefs.lastError = "暂时没有收到运营商回复,请稍后再试"
+            prefs.lastError = QueryResultHandler.NO_REPLY_ERROR
             prefs.lastErrorAt = System.currentTimeMillis()
         } else {
             handler.removeCallbacks(timeoutRunnable)
@@ -241,6 +245,7 @@ class MainActivity : Activity() {
         VibrateHelper.tick(this)
         prefs.state = QueryState.SENDING
         prefs.lastError = ""
+        prefs.pendingSmsBody = ""
         render()
         val sentIntent = PendingIntent.getBroadcast(
             this, 0,
@@ -287,12 +292,29 @@ class MainActivity : Activity() {
         prefs.lastErrorAt = System.currentTimeMillis()
         render()
         announce(message)
+        maybeShowDualSimTip()
         handler.postDelayed({
             if (prefs.state == QueryState.FAILED) {
                 prefs.state = QueryState.IDLE
                 render()
             }
         }, 4_000)
+    }
+
+    /**
+     * 双卡用户查询无回复时的两条出路:关掉非查询卡,或复制查询指令手动发送。
+     * 手动发出后运营商回复仍走 BalanceReceiver 的自动识别与播报链路。
+     * 触发:查询失败(含后台超时后回到界面);切换查询卡时的提示在 SettingsActivity。
+     */
+    private fun maybeShowDualSimTip() {
+        if (dualSimTipShowing) return
+        if (prefs.state != QueryState.FAILED) return
+        if (prefs.lastError != QueryResultHandler.NO_REPLY_ERROR) return
+        if (!DualSimTip.isDualSim(this)) return
+        if (isFinishing || isDestroyed) return
+        Log.i(TAG, "dual sim tip: query failed without reply, show tip")
+        dualSimTipShowing = true
+        DualSimTip.show(this, prefs.effectiveProfile()) { dualSimTipShowing = false }
     }
 
     /** 查询后安排系统闹钟兜底超时:进程被杀、清理后台后同样会触发提示 */
@@ -369,7 +391,12 @@ class MainActivity : Activity() {
         if (prefs.state == QueryState.SUCCESS) {
             prefs.state = QueryState.IDLE
         }
-        balanceView.text = if (prefs.lastBalance.isEmpty()) "¥ --" else "¥" + prefs.lastBalance
+        balanceView.text = when {
+            prefs.lastBalance.isEmpty() -> "¥ --"
+            // 欠费显示负号在前:-¥5.20
+            prefs.lastBalance.startsWith("-") -> "-¥" + prefs.lastBalance.substring(1)
+            else -> "¥" + prefs.lastBalance
+        }
         if (prefs.lastConsumption.isNotEmpty()) {
             consumptionLine.visibility = android.view.View.VISIBLE
             consumptionLine.text = "本月消费 ¥${prefs.lastConsumption}"
@@ -417,11 +444,10 @@ class MainActivity : Activity() {
         }
     }
 
-    /** 用当前缓存余额组织播报语,没有余额时不播 */
+    /** 用当前缓存余额组织播报语,没有余额时不播;负数余额播「您当前欠费…」 */
     private fun speakBalance() {
         if (prefs.lastBalance.isEmpty()) return
-        val reading = MoneyFormatter.toChineseReading(BigDecimal(prefs.lastBalance))
-        announce("您当前的话费余额是$reading")
+        announce(MoneyFormatter.balancePhrase(BigDecimal(prefs.lastBalance)))
     }
 
     private fun formatLastQuery(ts: Long): String {

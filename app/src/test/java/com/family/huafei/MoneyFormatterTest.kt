@@ -51,4 +51,17 @@ class MoneyFormatterTest {
         assertEquals("一万零一元", read("10001"))
         assertEquals("二十万零六百元", read("200600"))
     }
+
+    @Test fun `负数读欠费`() {
+        assertEquals("欠费五元二角", read("-5.20"))
+        assertEquals("欠费五元", read("-5.00"))
+        assertEquals("欠费五角", read("-0.50"))
+        assertEquals("欠费五分", read("-0.05"))
+    }
+
+    @Test fun `播报整句区分余额与欠费`() {
+        assertEquals("您当前的话费余额是三十六元二角", MoneyFormatter.balancePhrase(BigDecimal("36.20")))
+        assertEquals("您当前欠费五元二角", MoneyFormatter.balancePhrase(BigDecimal("-5.20")))
+        assertEquals("您当前欠费五角", MoneyFormatter.balancePhrase(BigDecimal("-0.50")))
+    }
 }

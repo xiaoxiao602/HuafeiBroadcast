@@ -69,6 +69,14 @@ class BalanceParserTest {
 
     @Test fun `欠费金额不误报`() = assertNull(mobile.parse("您尚有欠费5.00元,请及时充值"))
 
+    @Test fun `负余额解析为负值`() = assertAmount("-5.00", mobile.parse("您的余额为-5.00元,请及时充值"))
+
+    @Test fun `兜底解析器解析负余额`() = assertAmount("-5.20", fallback.parse("当前余额为-5.20元"))
+
+    @Test fun `移动额外正则解析负余额`() = assertAmount("-3.50", mobile.parse("话费余额为:-3.50元"))
+
+    @Test fun `负数消费解析为负值`() = assertAmount("-8.00", mobile.parseConsumption("本月消费-8.00元,余额20元"))
+
     @Test fun `赠送金额不误报`() {
         val body = "赠送金额10元已到账,当前可用余额36.20元"
         assertAmount("36.20", mobile.parse(body))

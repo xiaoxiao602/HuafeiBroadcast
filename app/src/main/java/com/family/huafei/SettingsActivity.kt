@@ -51,6 +51,9 @@ class SettingsActivity : Activity() {
     private lateinit var updateStatus: TextView
 
     private var suppressCarrierCallback = false
+
+    /** 回填运营商默认号码/指令时屏蔽 TextWatcher,避免把默认值固化成自定义值 */
+    private var suppressQueryWatchers = false
     private var updateChecking = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -129,6 +132,7 @@ class SettingsActivity : Activity() {
             override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
             override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
             override fun afterTextChanged(s: Editable?) {
+                if (suppressQueryWatchers) return
                 prefs.queryNumber = s?.toString()?.trim() ?: ""
             }
         })
@@ -136,6 +140,7 @@ class SettingsActivity : Activity() {
             override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
             override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
             override fun afterTextChanged(s: Editable?) {
+                if (suppressQueryWatchers) return
                 prefs.queryCommand = s?.toString()?.trim() ?: ""
             }
         })
@@ -177,8 +182,10 @@ class SettingsActivity : Activity() {
 
     private fun showProfileDefaults() {
         val base = if (prefs.carrierId.isEmpty()) CarrierProfile.MOBILE else CarrierProfile.byId(prefs.carrierId)
+        suppressQueryWatchers = true
         queryNumberEt.setText(prefs.queryNumber.ifBlank { base.destinationNumber })
         queryCommandEt.setText(prefs.queryCommand.ifBlank { base.queryCommand })
+        suppressQueryWatchers = false
     }
 
     /** 号码/指令被改坏时一键回到当前运营商的默认查询方式 */
@@ -316,11 +323,31 @@ class SettingsActivity : Activity() {
     private fun selectSub(sub: SubscriptionInfo) {
         prefs.subId = sub.subscriptionId
         prefs.subIccid = sub.iccId ?: ""
-        if (prefs.carrierId.isEmpty()) {
-            CarrierProfile.guessByMccMnc(mccOf(sub), mncOf(sub))?.let { prefs.carrierId = it.id }
+        // 查询指令/号码必须跟着卡走:换到别的运营商的卡就切换运营商配置,
+        // 清掉旧卡的自定义指令,否则复制的指令发不到新卡的运营商
+        val guessed = CarrierProfile.guessByMccMnc(mccOf(sub), mncOf(sub))
+        if (guessed != null && guessed.id != prefs.carrierId) {
+            prefs.carrierId = guessed.id
+            prefs.queryNumber = ""
+            prefs.queryCommand = ""
         }
+        // 运营商可能被上面逻辑改写,单选组与号码/指令回填要同步(屏蔽回调防递归)
+        suppressCarrierCallback = true
+        carrierGroup.check(
+            when (prefs.carrierId) {
+                "unicom" -> R.id.rbUnicom
+                "telecom" -> R.id.rbTelecom
+                else -> R.id.rbMobile
+            }
+        )
+        suppressCarrierCallback = false
+        showProfileDefaults()
         Toast.makeText(this, "已选择:${sub.displayName} 卡槽${sub.simSlotIndex + 1}", Toast.LENGTH_SHORT).show()
         refreshSimList()
+        // 双卡机型每次切换查询卡都提示救援路径(含复制当前卡的查询指令)
+        if (DualSimTip.isDualSim(this)) {
+            DualSimTip.show(this, prefs.effectiveProfile())
+        }
     }
 
     private fun mccOf(sub: SubscriptionInfo): String =

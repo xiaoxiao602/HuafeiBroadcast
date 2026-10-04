@@ -29,28 +29,49 @@ object QueryResultHandler {
         Log.i(TAG, "carrier sms from $sender: $body")
         if (prefs.debugMode) prefs.lastRawSms = "[$sender] $body"
 
-        val amount = ParserFactory.forId(profile.parserType).parse(body)
-        val consumption = ParserFactory.forId(profile.parserType).parseConsumption(body)
-        prefs.lastConsumption = consumption?.toPlainString() ?: ""
-        if (amount == null) {
-            failWith(context, "收到运营商短信,但没有识别出话费余额,请让家人检查", announce)
-        } else {
-            cancelTimeoutAlarm(context)
-            prefs.lastBalance = amount.toPlainString()
-            prefs.lastQueryTime = System.currentTimeMillis()
-            prefs.state = QueryState.SUCCESS
-            Log.i(TAG, "balance parsed: ${amount.toPlainString()} consumption=${consumption ?: "-"}")
-            if (announce) {
-                announce(context, "您当前的话费余额是${MoneyFormatter.toChineseReading(amount)}")
+        val parser = ParserFactory.forId(profile.parserType)
+        var text = body
+        var amount = parser.parse(text)
+        if (amount == null && prefs.state == QueryState.WAITING) {
+            // 长短信分条到达时,每条是独立广播:与上一段缓存拼接后重试
+            val buffered = prefs.pendingSmsBody
+            if (buffered.isNotEmpty()) {
+                text = "$buffered\n$body"
+                amount = parser.parse(text)
             }
-            VibrateHelper.double(context)
-            notifyUi(context)
         }
+
+        if (amount == null) {
+            if (prefs.state == QueryState.WAITING && prefs.pendingSmsBody.isEmpty()) {
+                // 第一段就解析不出:可能是分条长短信的开头,缓存后等下一段,不立即报错;
+                // 后续一直拼不出来则由超时兜底给出对应提示
+                prefs.pendingSmsBody = body
+                Log.i(TAG, "sms fragment buffered, waiting for next segment")
+                return
+            }
+            failWith(context, "收到运营商短信,但没有识别出话费余额,请让家人检查", announce)
+            return
+        }
+
+        val consumption = parser.parseConsumption(text)
+        prefs.lastConsumption = consumption?.toPlainString() ?: ""
+        prefs.pendingSmsBody = ""
+        cancelTimeoutAlarm(context)
+        prefs.lastBalance = amount.toPlainString()
+        prefs.lastQueryTime = System.currentTimeMillis()
+        prefs.state = QueryState.SUCCESS
+        Log.i(TAG, "balance parsed: ${amount.toPlainString()} consumption=${consumption ?: "-"}")
+        if (announce) {
+            announce(context, MoneyFormatter.balancePhrase(amount))
+        }
+        VibrateHelper.double(context)
+        notifyUi(context)
     }
 
     private fun failWith(context: Context, message: String, announce: Boolean) {
         cancelTimeoutAlarm(context)
         val prefs = Prefs(context)
+        prefs.pendingSmsBody = ""
         prefs.state = QueryState.FAILED
         prefs.lastError = message
         prefs.lastErrorAt = System.currentTimeMillis()
@@ -72,8 +93,15 @@ object QueryResultHandler {
     fun onQueryTimeout(context: Context) {
         val prefs = Prefs(context)
         if (prefs.state != QueryState.WAITING) return
+        val hadFragments = prefs.pendingSmsBody.isNotEmpty()
+        prefs.pendingSmsBody = ""
         prefs.state = QueryState.FAILED
-        prefs.lastError = "暂时没有收到运营商回复,请稍后再试"
+        prefs.lastError = if (hadFragments) {
+            // 收到过运营商短信但拼接后仍没识别出余额,提示应区别于「没收到回复」
+            "收到运营商短信,但没有识别出话费余额,请让家人检查"
+        } else {
+            NO_REPLY_ERROR
+        }
         prefs.lastErrorAt = System.currentTimeMillis()
         Log.w(TAG, "query timeout fired by alarm")
         if (!MainActivity.uiVisible) announce(context, prefs.lastError)
@@ -99,6 +127,9 @@ object QueryResultHandler {
     }
 
     private const val TAG = "Huafei"
+
+    /** 查询超时且没有收到任何运营商短信时的统一错误文案,主界面靠它识别「无回复」场景 */
+    const val NO_REPLY_ERROR = "暂时没有收到运营商回复,请稍后再试"
 
     /**
      * 一次性后台播报器:init 成功即播,播完或出错自动 shutdown。
@@ -153,6 +184,7 @@ object SmsSimulator {
     fun deliver(context: Context, sender: String, body: String) {
         val prefs = Prefs(context)
         // 模拟期间置为等待状态,保证状态机与真实流程一致
+        prefs.pendingSmsBody = ""
         prefs.state = QueryState.WAITING
         prefs.querySentAt = System.currentTimeMillis()
         QueryResultHandler.onCarrierSms(context, sender, body)

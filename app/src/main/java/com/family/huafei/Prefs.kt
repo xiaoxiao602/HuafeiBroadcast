@@ -86,8 +86,15 @@ class Prefs(context: Context) {
         get() = sp.getString(KEY_LAST_RAW_SMS, "") ?: ""
         set(value) = sp.edit().putString(KEY_LAST_RAW_SMS, value).apply()
 
+    /** 长短信分条到达时,暂存已收到但单独解析不出的片段,下一段到达后拼接重试 */
+    var pendingSmsBody: String
+        get() = sp.getString(KEY_PENDING_SMS_BODY, "") ?: ""
+        set(value) = sp.edit().putString(KEY_PENDING_SMS_BODY, value).apply()
+
     var state: QueryState
-        get() = QueryState.valueOf(sp.getString(KEY_STATE, QueryState.IDLE.name) ?: QueryState.IDLE.name)
+        get() = runCatching {
+            QueryState.valueOf(sp.getString(KEY_STATE, null) ?: QueryState.IDLE.name)
+        }.getOrDefault(QueryState.IDLE)
         set(value) = sp.edit().putString(KEY_STATE, value.name).apply()
 
     /** 生效的运营商配置:家属自定义号码/指令优先,否则用默认 Profile */
@@ -119,6 +126,7 @@ class Prefs(context: Context) {
         const val KEY_LAST_ERROR = "lastError"
         const val KEY_LAST_ERROR_AT = "lastErrorAt"
         const val KEY_LAST_RAW_SMS = "lastRawSms"
+        const val KEY_PENDING_SMS_BODY = "pendingSmsBody"
         const val KEY_STATE = "state"
     }
 }

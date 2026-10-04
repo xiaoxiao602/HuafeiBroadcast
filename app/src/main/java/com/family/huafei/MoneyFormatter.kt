@@ -8,6 +8,7 @@ import java.math.RoundingMode
  * 36.00 -> 三十六元    36.20 -> 三十六元二角
  * 36.26 -> 三十六元二角六分    36.05 -> 三十六元零五分
  * 0.50  -> 五角        0.05  -> 五分    0 -> 零元
+ * -5.20 -> 欠费五元二角(负数按欠费读,读绝对值)
  */
 object MoneyFormatter {
 
@@ -15,6 +16,7 @@ object MoneyFormatter {
     private val SMALL_UNITS = arrayOf("", "十", "百", "千")
 
     fun toChineseReading(amount: BigDecimal): String {
+        if (amount.signum() < 0) return "欠费" + toChineseReading(amount.abs())
         val plain = amount.setScale(2, RoundingMode.DOWN).toPlainString()
         val dot = plain.indexOf('.')
         val intPart = if (dot >= 0) plain.substring(0, dot) else plain
@@ -34,6 +36,11 @@ object MoneyFormatter {
         if (sb.isEmpty()) sb.append("零元")
         return sb.toString()
     }
+
+    /** 播报整句:余额为正读「您当前的话费余额是…」,为负读「您当前欠费…」 */
+    fun balancePhrase(amount: BigDecimal): String =
+        if (amount.signum() < 0) "您当前${toChineseReading(amount)}"
+        else "您当前的话费余额是${toChineseReading(amount)}"
 
     private fun readInteger(value: Long): String {
         if (value <= 0) return "零"

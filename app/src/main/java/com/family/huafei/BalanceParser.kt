@@ -19,7 +19,8 @@ open class KeywordBalanceParser(protected val extraPatterns: List<Regex> = empty
 
     private data class Candidate(val amount: BigDecimal, val score: Int)
 
-    private val moneyRegex = Regex("""(\d+(?:\.\d{1,2})?)\s*元""")
+    // 负号允许匹配:欠费场景余额可能为负,负值照样解析,由播报层读作「欠费…」
+    private val moneyRegex = Regex("""(-?\d+(?:\.\d{1,2})?)\s*元""")
 
     // 关键词 -> 权重,越具体权重越高
     private val positiveKeywords = linkedMapOf(
@@ -124,21 +125,21 @@ open class KeywordBalanceParser(protected val extraPatterns: List<Regex> = empty
 }
 
 class ChinaMobileBalanceParser : KeywordBalanceParser(
-    listOf(Regex("""话费余额\s*(?:为|是)?\s*[:：]?\s*(?:人民币|￥|¥)?\s*(\d+(?:\.\d{1,2})?)"""))
+    listOf(Regex("""话费余额\s*(?:为|是)?\s*[:：]?\s*(?:人民币|￥|¥)?\s*(-?\d+(?:\.\d{1,2})?)"""))
 )
 
 class ChinaUnicomBalanceParser : KeywordBalanceParser(
-    listOf(Regex("""账户\s*(?:当前)?余额\s*(?:为|是)?\s*[:：]?\s*(?:人民币|￥|¥)?\s*(\d+(?:\.\d{1,2})?)"""))
+    listOf(Regex("""账户\s*(?:当前)?余额\s*(?:为|是)?\s*[:：]?\s*(?:人民币|￥|¥)?\s*(-?\d+(?:\.\d{1,2})?)"""))
 )
 
 class ChinaTelecomBalanceParser : KeywordBalanceParser(
-    listOf(Regex("""(?:当前)?可用余额\s*(?:为|是)?\s*[:：]?\s*(?:人民币|￥|¥)?\s*(\d+(?:\.\d{1,2})?)"""))
+    listOf(Regex("""(?:当前)?可用余额\s*(?:为|是)?\s*[:：]?\s*(?:人民币|￥|¥)?\s*(-?\d+(?:\.\d{1,2})?)"""))
 )
 
 /** 兜底解析器:只认「余额」紧邻的金额,最保守 */
 class FallbackBalanceParser : BalanceParser {
     private val strict =
-        Regex("""余额\s*(?:为|是)?\s*[:：]?\s*(?:人民币|￥|¥)?\s*(\d+(?:\.\d{1,2})?)\s*元""")
+        Regex("""余额\s*(?:为|是)?\s*[:：]?\s*(?:人民币|￥|¥)?\s*(-?\d+(?:\.\d{1,2})?)\s*元""")
 
     override fun parse(body: String): BigDecimal? =
         strict.find(body)?.groupValues?.get(1)?.toBigDecimalOrNull()
