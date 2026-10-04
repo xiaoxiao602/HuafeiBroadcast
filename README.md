@@ -16,7 +16,7 @@
 - **解析防误报**：运营商回复里常混着「本月消费」「套餐费」「剩余流量」等金额，解析器按关键词上下文挑出余额；挑不准就不播，宁可漏播不播错。
 - **双卡安全**：查询短信只从设定的卡发出。卡槽变更后按 ICCID 重新匹配，匹配不上会提示重新设置，不会用另一张卡误发。
 - **检查更新**：家属设置里可手动检查 GitHub 上的新版本，有更新时一键跳转浏览器下载。
-- **轻量、不驻留**：release 包约 75 KB，无第三方 SDK，无常驻服务，查询结束即安静。
+- **轻量、不驻留**：release 包约 76 KB，无第三方 SDK，无常驻服务，查询结束即安静。
 
 ## 隐私
 
@@ -32,7 +32,7 @@ App 平时零联网，没有服务器、统计和广告，短信内容只在本�
 
 ## 下载与安装
 
-1. 从 [Releases](../../releases) 的 Assets 里下载 `HuafeiBroadcast-v1.0.0-release.apk` 传到手机安装（调试版 `HuafeiBroadcast-v1.0.0-debug.apk` 日志更全，日常使用装 release 版）。
+1. 从 [Releases](../../releases) 的 Assets 里下载 `HuafeiBroadcast-v1.0.1-release.apk` 传到手机安装（文件名以 `-debug.apk` 结尾的调试包日志更全，排查问题时用，日常使用装 release 版）。
 2. 打开 App，按「首次使用」引导操作：点「一键授权」，把系统弹出的短信、电话权限全部允许，页面会逐项显示授权状态。
 3. 选择运营商后点「完成，开始使用」；双卡手机在引导页选卡，单卡自动完成。
 
@@ -56,7 +56,7 @@ App 平时零联网，没有服务器、统计和广告，短信内容只在本�
 
 ## 从源码构建
 
-需要 JDK 17+ 与 Android SDK（API 34）。Windows 下请把工程放在纯英文路径（AGP 的限制，中文路径下单元测试无法运行）。
+需要 JDK 17–23 与 Android SDK（API 34）。Gradle 8.13 不支持在 JDK 24+ 上运行，用更高版本 JDK 会构建失败。Windows 下请把工程放在纯英文路径（AGP 的限制，中文路径下单元测试无法运行）。
 
 ```bash
 git clone https://github.com/xiaoxiao602/HuafeiBroadcast.git
@@ -111,12 +111,12 @@ com.family.huafei
 
 ## 测试
 
-单元测试 37 项全部通过：MoneyFormatter 覆盖整数、小数、角分、零、万位等全部格式；BalanceParser 覆盖三运营商真实短信、干扰案例（同短信含消费、套餐、流量金额时只取余额）和白名单匹配；UpdateChecker 覆盖版本号比较。
+单元测试 43 项全部通过：MoneyFormatter 覆盖整数、小数、角分、零、万位等全部格式，以及欠费负数读法（-5.20 元念「欠费五元二角」）；BalanceParser 覆盖三运营商真实短信、干扰案例（同短信含消费、套餐、流量金额时只取余额）、负余额与欠费解析和白名单匹配；UpdateChecker 覆盖版本号比较。
 
 真机验证：
 
 - **Redmi 9**（MIUI 13 / Android 12，中国移动）：发送 YE 到 10086，9 秒收到回复，解析出 24.89 元并正确跳过同短信中的「本月产生话费16.00元」，播报、后台播报、音量还原、超时提示、进程被杀恢复均通过；`dumpsys activity services` 确认无常驻服务。
-- **小米 15 Ultra**（HyperOS 4）、**Redmi K70**（HyperOS 3 / Android 16）、**荣耀 V20**（PCT-AL10，HarmonyOS 4 / Android 10 底座）：侧载安装，放行权限后全链路查询与语音播报正常。
+- **小米 15 Ultra**（HyperOS 4）、**Redmi K90**（HyperOS 4 / Android 17）、**Redmi K70**（HyperOS 3 / Android 16）、**荣耀 V20**（PCT-AL10，HarmonyOS 4 / Android 10 底座）：侧载安装，放行权限后全链路查询与语音播报正常。
 
 各版本功能变化见 [CHANGELOG.md](CHANGELOG.md)。
 
